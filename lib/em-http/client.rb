@@ -22,7 +22,7 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :state, :response
-    attr_reader   :header_history, :request_body, :response_header, :error, :content_charset, :req, :cookies
+    attr_reader   :header_history, :request_body, :response_header, :error, :content_charset, :req, :cookies, :cookiejar
 
     def initialize(conn, options)
       @conn = conn
@@ -31,7 +31,7 @@ module EventMachine
       @stream    = nil
       @headers   = nil
       @cookies   = []
-      @cookiejar = CookieJar.new
+      @cookiejar = CookieJar.new(options.json_cookiejar)
 
       @header_history = []
 
@@ -143,6 +143,7 @@ module EventMachine
       end
 
       # Set the cookie header if provided
+      @cookies += @cookiejar.get(@req.uri.to_s).map(&:to_s)
       if cookie = head['cookie']
         @cookies << encode_cookie(cookie) if cookie
       end
@@ -307,8 +308,20 @@ module EventMachine
     end
 
     class CookieJar
-      def initialize
-        @jar = ::CookieJar::Jar.new
+      def initialize(str = nil)
+        if str
+          json = JSON.parse(str)
+          @jar = ::CookieJar::Jar.json_create(json)
+        else
+          @jar = ::CookieJar::Jar.new
+        end
+      end
+
+      def to_json
+        json = @jar.to_json
+        parsed = JSON.parse(json)
+        parsed['cookies'] = JSON.parse(parsed['cookies'])
+        parsed.to_json
       end
 
       def set string, uri

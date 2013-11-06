@@ -2,6 +2,7 @@ class HttpClientOptions
   attr_reader :uri, :method, :host, :port
   attr_reader :headers, :file, :body, :query, :path
   attr_reader :keepalive, :pass_cookies, :decoding
+  attr_reader :json_cookiejar
 
   attr_accessor :followed, :redirects
 
@@ -20,6 +21,8 @@ class HttpClientOptions
 
     @pass_cookies = options.fetch(:pass_cookies, true)  # pass cookies between redirects
     @decoding     = options.fetch(:decoding, true)      # auto-decode compressed response
+
+    @json_cookiejar = options[:json_cookiejar]
 
     set_uri(uri, options[:path])
   end
