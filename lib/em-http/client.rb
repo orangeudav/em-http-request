@@ -325,11 +325,11 @@ module EventMachine
       end
 
       def set string, uri
-        @jar.set_cookie(uri, string) rescue nil # drop invalid cookies
+        @jar.set_cookie(uri, string)
       end
 
       def get uri
-        uri = URI.parse(uri) rescue nil
+        uri = URI.parse(uri)
         uri ? @jar.get_cookies(uri) : []
       end
     end # CookieJar
